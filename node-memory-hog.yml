@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: custom-1669873038
+  name: node-memory-hog-sur
   namespace: litmus
   labels:
     subject: custom_litmus
