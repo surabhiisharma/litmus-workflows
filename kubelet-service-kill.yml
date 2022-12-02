@@ -186,7 +186,7 @@ spec:
                             - name: TOTAL_CHAOS_DURATION
                               value: "60"
                             - name: TARGET_NODE
-                              value: {{workflow.parameters.targetNode}}
+                              value: "{{workflow.parameters.targetNode}}"
                         probe: []
       container:
         args:
