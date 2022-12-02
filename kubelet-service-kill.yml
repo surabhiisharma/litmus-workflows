@@ -1,15 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: custom-1669872979
+  name: kubelet-kill-chaos-1669967038
   namespace: litmus
   labels:
-    subject: custom_litmus
+    subject: kubelet-kill-chaos_litmus
 spec:
   arguments:
     parameters:
       - name: adminModeNamespace
         value: litmus
+      - name: targetNode
+        value: ${TargetNode}
   entrypoint: custom-chaos
   securityContext:
     runAsNonRoot: true
@@ -20,141 +22,13 @@ spec:
       steps:
         - - name: install-chaos-experiments
             template: install-chaos-experiments
-        - - name: kubelet-service-kill-sgo
-            template: kubelet-service-kill-sgo
+        - - name: kubelet-service-kill-wqr
+            template: kubelet-service-kill-wqr
     - name: install-chaos-experiments
       inputs:
         artifacts:
-          - name: node-cpu-hog-16m
-            path: /tmp/node-cpu-hog-16m.yaml
-            raw:
-              data: |
-                apiVersion: litmuschaos.io/v1alpha1
-                description:
-                  message: |
-                    Give a cpu spike on a node belonging to a deployment
-                kind: ChaosExperiment
-                metadata:
-                  name: node-cpu-hog
-                  labels:
-                    name: node-cpu-hog
-                    app.kubernetes.io/part-of: litmus
-                    app.kubernetes.io/component: chaosexperiment
-                    app.kubernetes.io/version: 2.14.0
-                spec:
-                  definition:
-                    scope: Cluster
-                    permissions:
-                      - apiGroups:
-                          - ""
-                        resources:
-                          - pods
-                        verbs:
-                          - create
-                          - delete
-                          - get
-                          - list
-                          - patch
-                          - update
-                          - deletecollection
-                      - apiGroups:
-                          - ""
-                        resources:
-                          - events
-                        verbs:
-                          - create
-                          - get
-                          - list
-                          - patch
-                          - update
-                      - apiGroups:
-                          - ""
-                        resources:
-                          - configmaps
-                        verbs:
-                          - get
-                          - list
-                      - apiGroups:
-                          - ""
-                        resources:
-                          - pods/log
-                        verbs:
-                          - get
-                          - list
-                          - watch
-                      - apiGroups:
-                          - ""
-                        resources:
-                          - pods/exec
-                        verbs:
-                          - get
-                          - list
-                          - create
-                      - apiGroups:
-                          - batch
-                        resources:
-                          - jobs
-                        verbs:
-                          - create
-                          - list
-                          - get
-                          - delete
-                          - deletecollection
-                      - apiGroups:
-                          - litmuschaos.io
-                        resources:
-                          - chaosengines
-                          - chaosexperiments
-                          - chaosresults
-                        verbs:
-                          - create
-                          - list
-                          - get
-                          - patch
-                          - update
-                          - delete
-                      - apiGroups:
-                          - ""
-                        resources:
-                          - nodes
-                        verbs:
-                          - get
-                          - list
-                    image: litmuschaos/go-runner:2.14.0
-                    imagePullPolicy: Always
-                    args:
-                      - -c
-                      - ./experiments -name node-cpu-hog
-                    command:
-                      - /bin/bash
-                    env:
-                      - name: TOTAL_CHAOS_DURATION
-                        value: "60"
-                      - name: RAMP_TIME
-                        value: ""
-                      - name: NODE_CPU_CORE
-                        value: ""
-                      - name: CPU_LOAD
-                        value: "100"
-                      - name: TARGET_NODES
-                        value: ""
-                      - name: NODE_LABEL
-                        value: ""
-                      - name: LIB
-                        value: litmus
-                      - name: LIB_IMAGE
-                        value: litmuschaos/go-runner:2.14.0
-                      - name: NODES_AFFECTED_PERC
-                        value: ""
-                      - name: SEQUENCE
-                        value: parallel
-                    labels:
-                      name: node-cpu-hog
-                      app.kubernetes.io/part-of: litmus
-                      app.kubernetes.io/component: experiment-job
-                      app.kubernetes.io/version: 2.14.0
-          - name: kubelet-service-kill-sgo
-            path: /tmp/kubelet-service-kill-sgo.yaml
+          - name: kubelet-service-kill-wqr
+            path: /tmp/kubelet-service-kill-wqr.yaml
             raw:
               data: >
                 apiVersion: litmuschaos.io/v1alpha1
@@ -278,17 +152,17 @@ spec:
                       app.kubernetes.io/version: 2.14.0
       container:
         args:
-          - kubectl apply -f /tmp/kubelet-service-kill-sgo.yaml -n
+          - kubectl apply -f /tmp/kubelet-service-kill-wqr.yaml -n
             {{workflow.parameters.adminModeNamespace}} &&  sleep 30
         command:
           - sh
           - -c
         image: litmuschaos/k8s:2.14.0
-    - name: kubelet-service-kill-sgo
+    - name: kubelet-service-kill-wqr
       inputs:
         artifacts:
-          - name: kubelet-service-kill-sgo
-            path: /tmp/chaosengine-kubelet-service-kill-sgo.yaml
+          - name: kubelet-service-kill-wqr
+            path: /tmp/chaosengine-kubelet-service-kill-wqr.yaml
             raw:
               data: >
                 apiVersion: litmuschaos.io/v1alpha1
@@ -297,7 +171,7 @@ spec:
 
                 metadata:
                   namespace: "{{workflow.parameters.adminModeNamespace}}"
-                  generateName: kubelet-service-kill-sgo
+                  generateName: kubelet-service-kill-wqr
                   labels:
                     workflow_run_id: "{{workflow.uid}}"
                 spec:
@@ -312,10 +186,10 @@ spec:
                             - name: TOTAL_CHAOS_DURATION
                               value: "60"
                             - name: TARGET_NODE
-                              value: gke-litmus-chaos-gke-litmus-nodepool--577b7a16-g7m5
+                              value: {{workflow.parameters.targetNode}}
                         probe: []
       container:
         args:
-          - -file=/tmp/chaosengine-kubelet-service-kill-sgo.yaml
+          - -file=/tmp/chaosengine-kubelet-service-kill-wqr.yaml
           - -saveName=/tmp/engine-name
         image: litmuschaos/litmus-checker:2.14.0
