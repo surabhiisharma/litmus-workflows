@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: kubelet-kill-chaos-sur-10
+  name: kubelet-kill-chaos-sur-9
   namespace: litmus
   labels:
     subject: kubelet-kill-chaos_litmus
