@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Workflow
 metadata:
-  name: kubelet-kill-chaos-sur-2
+  name: kubelet-kill-chaos-1669967038
   namespace: litmus
   labels:
     subject: kubelet-kill-chaos_litmus
@@ -12,6 +12,8 @@ spec:
         value: litmus
       - name: targetNode
         value: ${TargetNode}
+      - name: chaosDuration
+        value: ${ChaosDuration}
   entrypoint: custom-chaos
   securityContext:
     runAsNonRoot: true
@@ -184,9 +186,9 @@ spec:
                         components:
                           env:
                             - name: TOTAL_CHAOS_DURATION
-                              value: "60"
+                              value: {{workflow.parameters.chaosDuration}}
                             - name: TARGET_NODE
-                              value: "{{workflow.parameters.targetNode}}"
+                              value: {{workflow.parameters.targetNode}}
                         probe: []
       container:
         args:
